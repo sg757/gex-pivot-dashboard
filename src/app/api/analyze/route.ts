@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { runAnalysis } from "@/lib/analyze";
+import { isValidSymbol } from "@/lib/symbols";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const symbol = (searchParams.get("symbol") ?? "SPY").toUpperCase();
+  const symbol = searchParams.get("symbol") ?? "SPY";
 
-  if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(symbol)) {
+  if (!isValidSymbol(symbol)) {
     return NextResponse.json({ error: "Invalid symbol" }, { status: 400 });
   }
 

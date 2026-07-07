@@ -1,7 +1,9 @@
 import type { Quote } from "./types";
+import { resolveSymbol } from "./symbols";
 
 export async function fetchQuote(symbol: string): Promise<Quote> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=10d`;
+  const resolved = resolveSymbol(symbol);
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(resolved.yahoo)}?interval=1d&range=10d`;
   const res = await fetch(url, {
     headers: {
       "User-Agent":
@@ -15,10 +17,16 @@ export async function fetchQuote(symbol: string): Promise<Quote> {
 
   const json = await res.json();
   const result = json?.chart?.result?.[0];
-  if (!result) throw new Error("No chart data in Yahoo response");
+  if (!result) {
+    throw new Error(`No quote data for ${resolved.display} (Yahoo: ${resolved.yahoo})`);
+  }
 
   const { meta, timestamp, indicators } = result;
-  const quotes = indicators.quote[0];
+  const quotes = indicators?.quote?.[0];
+  if (!quotes || !Array.isArray(timestamp) || timestamp.length === 0) {
+    throw new Error(`Incomplete quote data for ${resolved.display}`);
+  }
+
   const price = meta.regularMarketPrice;
 
   let idx = timestamp.length - 1;
@@ -33,7 +41,7 @@ export async function fetchQuote(symbol: string): Promise<Quote> {
       typeof quotes.close[i] === "number"
     ) {
       return {
-        symbol: meta.symbol,
+        symbol: resolved.display,
         price,
         previousSession: {
           high: quotes.high[i],

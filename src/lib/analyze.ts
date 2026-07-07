@@ -3,12 +3,15 @@ import { findOptimalPivots, summarizeTradePlan } from "./confluence";
 import { analyzeGEX } from "./gex-analysis";
 import { allTraditionalPivots } from "./pivots";
 import { fetchQuote } from "./quote";
+import { resolveSymbol } from "./symbols";
 import type { AnalysisReport } from "./types";
 
 export async function runAnalysis(ticker: string): Promise<AnalysisReport> {
+  const resolved = resolveSymbol(ticker);
+
   const [quote, gex] = await Promise.all([
-    fetchQuote(ticker),
-    fetchBullflowGEX(ticker, process.env.BULLFLOW_API_KEY),
+    fetchQuote(resolved.display),
+    fetchBullflowGEX(resolved.bullflow, process.env.BULLFLOW_API_KEY),
   ]);
 
   const gexAnalysis = analyzeGEX(gex, quote.price);
@@ -25,7 +28,7 @@ export async function runAnalysis(ticker: string): Promise<AnalysisReport> {
   );
 
   return {
-    ticker: ticker.toUpperCase(),
+    ticker: resolved.display,
     asOf: new Date().toISOString(),
     quote,
     gexAnalysis,

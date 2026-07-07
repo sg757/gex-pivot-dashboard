@@ -9,7 +9,7 @@ import QuoteHeader from "@/components/QuoteHeader";
 import TradePlan from "@/components/TradePlan";
 import type { AnalysisReport } from "@/lib/types";
 
-const POPULAR = ["SPY", "QQQ", "IWM", "AAPL", "NVDA", "TSLA"];
+const POPULAR = ["SPY", "SPX", "QQQ", "IWM", "AAPL", "NVDA", "TSLA"];
 const REFRESH_MS = 2 * 60_000;
 
 export default function Dashboard() {
