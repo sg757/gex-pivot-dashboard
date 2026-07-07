@@ -5,14 +5,16 @@ export interface ResolvedSymbol {
   bullflow: string;
   /** Yahoo Finance chart symbol */
   yahoo: string;
+  /** Yahoo Finance options chain symbol (defaults to yahoo) */
+  yahooOptions?: string;
 }
 
 /** Index and alias mappings — Bullflow ticker → Yahoo quote symbol */
 const INDEX_MAP: Record<string, ResolvedSymbol> = {
-  SPX: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC" },
-  GSPC: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC" },
-  RUT: { display: "RUT", bullflow: "RUT", yahoo: "^RUT" },
-  VIX: { display: "VIX", bullflow: "VIX", yahoo: "^VIX" },
+  SPX: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
+  GSPC: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
+  RUT: { display: "RUT", bullflow: "RUT", yahoo: "^RUT", yahooOptions: "^RUT" },
+  VIX: { display: "VIX", bullflow: "VIX", yahoo: "^VIX", yahooOptions: "^VIX" },
 };
 
 /**

@@ -38,7 +38,10 @@ export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
     <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
       <div className="mb-1 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-neutral-300">Net GEX by Strike</h2>
-        <span className="text-xs text-neutral-500">Bullflow.io</span>
+        <span className="text-xs text-neutral-500">
+          {analysis.selectedExpirationLabel ?? "All Expirations"}
+          {analysis.gexSource === "computed" ? " · computed" : " · Bullflow"}
+        </span>
       </div>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} margin={{ left: 10, right: 10 }}>

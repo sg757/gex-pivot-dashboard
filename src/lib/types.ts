@@ -45,6 +45,9 @@ export interface GEXAnalysis {
   levels: GEXLevel[];
   nearbyStrikes: BullflowStrike[];
   expirations: BullflowExpiration[];
+  selectedExpiration?: string;
+  selectedExpirationLabel?: string;
+  gexSource?: "bullflow" | "computed";
 }
 
 export interface PivotLevel {
@@ -73,6 +76,12 @@ export interface TradePlan {
   strategy: string;
 }
 
+export interface ExpirationOption {
+  value: string;
+  label: string;
+  netGex: number;
+}
+
 export interface AnalysisReport {
   ticker: string;
   asOf: string;
@@ -81,4 +90,5 @@ export interface AnalysisReport {
   traditionalPivots: PivotLevel[];
   optimalPivots: OptimalPivot[];
   tradePlan: TradePlan;
+  expirationOptions: ExpirationOption[];
 }

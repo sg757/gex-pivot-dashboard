@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ExpirationSelector from "@/components/ExpirationSelector";
 import ExpirationTable from "@/components/ExpirationTable";
 import GEXChart from "@/components/GEXChart";
 import KeyLevels from "@/components/KeyLevels";
@@ -15,16 +16,19 @@ const REFRESH_MS = 2 * 60_000;
 export default function Dashboard() {
   const [symbol, setSymbol] = useState("SPY");
   const [input, setInput] = useState("SPY");
+  const [expiration, setExpiration] = useState("all");
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const load = useCallback(async (sym: string) => {
+  const load = useCallback(async (sym: string, exp: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/analyze?symbol=${encodeURIComponent(sym)}`);
+      const params = new URLSearchParams({ symbol: sym });
+      if (exp !== "all") params.set("expiration", exp);
+      const res = await fetch(`/api/analyze?${params}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Request failed");
       setReport(data);
@@ -37,15 +41,18 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    load(symbol);
-    const timer = setInterval(() => load(symbol), REFRESH_MS);
+    load(symbol, expiration);
+    const timer = setInterval(() => load(symbol, expiration), REFRESH_MS);
     return () => clearInterval(timer);
-  }, [symbol, load]);
+  }, [symbol, expiration, load]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const next = input.trim().toUpperCase();
-    if (next) setSymbol(next);
+    if (next) {
+      setSymbol(next);
+      setExpiration("all");
+    }
   };
 
   return (
@@ -57,20 +64,30 @@ export default function Dashboard() {
             Bullflow.io gamma exposure · optimal pivot confluence
           </p>
         </div>
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value.toUpperCase())}
-            placeholder="Symbol"
-            className="w-28 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-sm text-neutral-100 outline-none focus:border-amber-500/50"
-          />
-          <button
-            type="submit"
-            className="rounded-lg bg-amber-500/90 px-4 py-2 text-sm font-semibold text-neutral-950 hover:bg-amber-400"
-          >
-            Analyze
-          </button>
-        </form>
+        <div className="flex flex-wrap items-center gap-3">
+          {report && (
+            <ExpirationSelector
+              options={report.expirationOptions}
+              value={expiration}
+              onChange={setExpiration}
+              disabled={loading}
+            />
+          )}
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value.toUpperCase())}
+              placeholder="Symbol"
+              className="w-28 rounded-lg border border-neutral-700 bg-neutral-900 px-3 py-2 font-mono text-sm text-neutral-100 outline-none focus:border-amber-500/50"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-amber-500/90 px-4 py-2 text-sm font-semibold text-neutral-950 hover:bg-amber-400"
+            >
+              Analyze
+            </button>
+          </form>
+        </div>
       </header>
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -80,6 +97,7 @@ export default function Dashboard() {
             onClick={() => {
               setSymbol(s);
               setInput(s);
+              setExpiration("all");
             }}
             className={`rounded-full border px-3 py-1 text-xs font-mono transition-colors ${
               symbol === s

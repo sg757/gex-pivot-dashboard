@@ -15,7 +15,12 @@ export default function KeyLevels({ analysis }: { analysis: GEXAnalysis }) {
 
   return (
     <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
-      <h2 className="mb-4 text-lg font-semibold text-neutral-300">GEX Key Levels</h2>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-neutral-300">GEX Key Levels</h2>
+        <span className="text-xs text-neutral-500">
+          {analysis.selectedExpirationLabel ?? "All Expirations"}
+        </span>
+      </div>
       <div className="mb-4 flex flex-wrap gap-x-5 gap-y-2 text-sm">
         <span className="text-neutral-400">
           Net GEX:{" "}

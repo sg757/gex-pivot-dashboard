@@ -8,7 +8,9 @@ export default function QuoteHeader({ report }: { report: AnalysisReport }) {
     <div className="rounded-xl border border-neutral-800 bg-gradient-to-br from-neutral-900 to-neutral-900/60 p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="mb-1 text-sm text-neutral-500">Analyzing</div>
+          <div className="mb-1 text-sm text-neutral-500">
+            {gexAnalysis.selectedExpirationLabel ?? "All Expirations"}
+          </div>
           <h1 className="text-4xl font-bold tracking-tight">{report.ticker}</h1>
           <div className="mt-2 font-mono text-3xl font-semibold text-neutral-100">
             ${quote.price.toFixed(2)}
