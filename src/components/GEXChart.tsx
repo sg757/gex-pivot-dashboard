@@ -61,6 +61,8 @@ export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
               border: "1px solid #404040",
               color: "#e5e5e5",
             }}
+            labelStyle={{ color: "#e5e5e5" }}
+            itemStyle={{ color: "#f5f5f5" }}
             formatter={(value) => [formatGex(Number(value)), "Net GEX"]}
           />
           <ReferenceLine y={0} stroke="#525252" />
