@@ -41,3 +41,19 @@ export function hasActiveGEXStrikes(gex: BullflowGEXResponse): boolean {
     (s) => s.net_gex !== 0 || s.call_gex !== 0 || s.put_gex !== 0,
   );
 }
+
+/** Enough non-zero strikes near spot to render a meaningful per-expiration chart. */
+export function hasMeaningfulNearbyGEX(
+  gex: BullflowGEXResponse,
+  spotPrice: number,
+  minStrikes = 10,
+  rangePct = 0.08,
+): boolean {
+  const range = spotPrice * rangePct;
+  const near = gex.strikes.filter(
+    (s) =>
+      Math.abs(s.strike - spotPrice) <= range &&
+      (s.net_gex !== 0 || s.call_gex !== 0 || s.put_gex !== 0),
+  );
+  return near.length >= minStrikes;
+}

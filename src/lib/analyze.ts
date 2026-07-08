@@ -1,6 +1,10 @@
 import { fetchBullflowGEX } from "./bullflow";
 import { computeGEXFromOptions } from "./compute-gex";
-import { hasActiveGEXStrikes, scaleBullflowGEXByExpiration } from "./scale-gex";
+import {
+  hasActiveGEXStrikes,
+  hasMeaningfulNearbyGEX,
+  scaleBullflowGEXByExpiration,
+} from "./scale-gex";
 import { findOptimalPivots, summarizeTradePlan } from "./confluence";
 import {
   formatExpirationLabel,
@@ -48,24 +52,26 @@ async function fetchGEXData(
     return { gex: bullflowAll, source: "bullflow" };
   }
 
-  try {
-    const chain = await fetchOptionsForExpiration(resolved.display, expiration);
-    if (chainHasOpenInterest(chain.calls, chain.puts)) {
-      const spot = chain.spotPrice || (await fetchQuote(resolved.display)).price;
-      const computed = computeGEXFromOptions(
-        chain.calls,
-        chain.puts,
-        spot,
-        chain.expirationUnix,
-        expiration,
-        bullflowAll.expirations,
-      );
-      if (hasActiveGEXStrikes(computed)) {
-        return { gex: computed, source: "computed" };
+  if (!resolved.preferBullflowScaled) {
+    try {
+      const chain = await fetchOptionsForExpiration(resolved.display, expiration);
+      if (chainHasOpenInterest(chain.calls, chain.puts)) {
+        const spot = chain.spotPrice || (await fetchQuote(resolved.display)).price;
+        const computed = computeGEXFromOptions(
+          chain.calls,
+          chain.puts,
+          spot,
+          chain.expirationUnix,
+          expiration,
+          bullflowAll.expirations,
+        );
+        if (hasMeaningfulNearbyGEX(computed, spot)) {
+          return { gex: computed, source: "computed" };
+        }
       }
+    } catch {
+      // Yahoo chain unavailable or missing OI — fall back to Bullflow scaling.
     }
-  } catch {
-    // Yahoo chain unavailable or missing OI — fall back to Bullflow scaling.
   }
 
   const scaled = scaleBullflowGEXByExpiration(bullflowAll, expiration);

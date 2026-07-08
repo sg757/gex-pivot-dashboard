@@ -7,13 +7,24 @@ export interface ResolvedSymbol {
   yahoo: string;
   /** Yahoo Finance options chain symbol (defaults to yahoo) */
   yahooOptions?: string;
+  /**
+   * Single-expiration GEX via Yahoo is unreliable (e.g. SPXW weeklies report OI=0).
+   * Use Bullflow exp-scaled strikes instead.
+   */
+  preferBullflowScaled?: boolean;
 }
 
 /** Index and alias mappings — Bullflow ticker → Yahoo quote symbol */
 const INDEX_MAP: Record<string, ResolvedSymbol> = {
   SPX: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
   GSPC: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
-  SPXW: { display: "SPXW", bullflow: "SPXW", yahoo: "^GSPC", yahooOptions: "^SPX" },
+  SPXW: {
+    display: "SPXW",
+    bullflow: "SPXW",
+    yahoo: "^GSPC",
+    yahooOptions: "^SPX",
+    preferBullflowScaled: true,
+  },
   RUT: { display: "RUT", bullflow: "RUT", yahoo: "^RUT", yahooOptions: "^RUT" },
   VIX: { display: "VIX", bullflow: "VIX", yahoo: "^VIX", yahooOptions: "^VIX" },
 };

@@ -20,19 +20,12 @@ function formatGex(value: number) {
 }
 
 export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
-  const range = analysis.spotPrice * 0.04;
   const flip = analysis.levels.find((l) => l.type === "gamma_flip");
 
-  const data = analysis.nearbyStrikes
-    .filter(
-      (s) =>
-        s.strike >= analysis.spotPrice - range &&
-        s.strike <= analysis.spotPrice + range,
-    )
-    .map((s) => ({
-      strike: s.strike.toFixed(s.strike % 1 === 0 ? 0 : 1),
-      netGex: Math.round(s.net_gex * 100) / 100,
-    }));
+  const data = analysis.nearbyStrikes.map((s) => ({
+    strike: s.strike.toFixed(s.strike % 1 === 0 ? 0 : 1),
+    netGex: Math.round(s.net_gex * 100) / 100,
+  }));
 
   return (
     <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
@@ -47,8 +40,17 @@ export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
               : " · Bullflow"}
         </span>
       </div>
+      {data.length === 0 ? (
+        <div className="flex h-[280px] items-center justify-center text-sm text-neutral-500">
+          No strike-level GEX near spot for this expiration.
+        </div>
+      ) : (
       <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} margin={{ left: 10, right: 10 }}>
+        <BarChart
+          key={analysis.selectedExpiration ?? "all"}
+          data={data}
+          margin={{ left: 10, right: 10 }}
+        >
           <XAxis
             dataKey="strike"
             tick={{ fontSize: 11, fill: "#a3a3a3" }}
@@ -94,6 +96,7 @@ export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      )}
     </div>
   );
 }
