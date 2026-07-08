@@ -47,7 +47,7 @@ export interface GEXAnalysis {
   expirations: BullflowExpiration[];
   selectedExpiration?: string;
   selectedExpirationLabel?: string;
-  gexSource?: "bullflow" | "computed";
+  gexSource?: "bullflow" | "computed" | "bullflow-scaled";
 }
 
 export interface PivotLevel {

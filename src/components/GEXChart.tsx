@@ -40,7 +40,11 @@ export default function GEXChart({ analysis }: { analysis: GEXAnalysis }) {
         <h2 className="text-lg font-semibold text-neutral-300">Net GEX by Strike</h2>
         <span className="text-xs text-neutral-500">
           {analysis.selectedExpirationLabel ?? "All Expirations"}
-          {analysis.gexSource === "computed" ? " · computed" : " · Bullflow"}
+          {analysis.gexSource === "computed"
+            ? " · computed"
+            : analysis.gexSource === "bullflow-scaled"
+              ? " · Bullflow (exp-scaled)"
+              : " · Bullflow"}
         </span>
       </div>
       <ResponsiveContainer width="100%" height={280}>

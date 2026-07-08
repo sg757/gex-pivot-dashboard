@@ -1,5 +1,6 @@
 import { fetchBullflowGEX } from "./bullflow";
 import { computeGEXFromOptions } from "./compute-gex";
+import { hasActiveGEXStrikes, scaleBullflowGEXByExpiration } from "./scale-gex";
 import { findOptimalPivots, summarizeTradePlan } from "./confluence";
 import {
   formatExpirationLabel,
@@ -31,27 +32,48 @@ function buildExpirationOptions(
   ];
 }
 
+function chainHasOpenInterest(calls: { openInterest?: number }[], puts: { openInterest?: number }[]) {
+  return (
+    calls.some((c) => (c.openInterest ?? 0) > 0) ||
+    puts.some((p) => (p.openInterest ?? 0) > 0)
+  );
+}
+
 async function fetchGEXData(
   resolved: ReturnType<typeof resolveSymbol>,
   expiration: ExpirationFilter,
   bullflowAll: BullflowGEXResponse,
-): Promise<{ gex: BullflowGEXResponse; source: "bullflow" | "computed" }> {
+): Promise<{ gex: BullflowGEXResponse; source: "bullflow" | "computed" | "bullflow-scaled" }> {
   if (expiration === "all") {
     return { gex: bullflowAll, source: "bullflow" };
   }
 
-  const chain = await fetchOptionsForExpiration(resolved.display, expiration);
-  const spot = chain.spotPrice || (await fetchQuote(resolved.display)).price;
+  try {
+    const chain = await fetchOptionsForExpiration(resolved.display, expiration);
+    if (chainHasOpenInterest(chain.calls, chain.puts)) {
+      const spot = chain.spotPrice || (await fetchQuote(resolved.display)).price;
+      const computed = computeGEXFromOptions(
+        chain.calls,
+        chain.puts,
+        spot,
+        chain.expirationUnix,
+        expiration,
+        bullflowAll.expirations,
+      );
+      if (hasActiveGEXStrikes(computed)) {
+        return { gex: computed, source: "computed" };
+      }
+    }
+  } catch {
+    // Yahoo chain unavailable or missing OI — fall back to Bullflow scaling.
+  }
 
-  const computed = computeGEXFromOptions(
-    chain.calls,
-    chain.puts,
-    spot,
-    chain.expirationUnix,
-    bullflowAll.expirations,
-  );
+  const scaled = scaleBullflowGEXByExpiration(bullflowAll, expiration);
+  if (!scaled || !hasActiveGEXStrikes(scaled)) {
+    throw new Error(`No GEX data available for expiration ${expiration}`);
+  }
 
-  return { gex: computed, source: "computed" };
+  return { gex: scaled, source: "bullflow-scaled" };
 }
 
 export async function runAnalysis(

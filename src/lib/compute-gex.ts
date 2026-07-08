@@ -24,6 +24,7 @@ export function computeGEXFromOptions(
   puts: OptionContract[],
   spotPrice: number,
   expirationUnix: number,
+  expirationKey: string,
   expirations: BullflowGEXResponse["expirations"],
 ): BullflowGEXResponse {
   // Standard dollar GEX: Γ × OI × 100 × S² × 0.01 = Γ × OI × S²
@@ -37,7 +38,7 @@ export function computeGEXFromOptions(
     return strikeMap.get(strike)!;
   };
 
-  const timeYears = yearsToExpiration(expirationUnix);
+  const timeYears = yearsToExpiration(expirationUnix, expirationKey);
 
   for (const c of calls) {
     const oi = c.openInterest ?? 0;
