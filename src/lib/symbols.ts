@@ -13,6 +13,7 @@ export interface ResolvedSymbol {
 const INDEX_MAP: Record<string, ResolvedSymbol> = {
   SPX: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
   GSPC: { display: "SPX", bullflow: "SPX", yahoo: "^GSPC", yahooOptions: "^SPX" },
+  SPXW: { display: "SPXW", bullflow: "SPXW", yahoo: "^GSPC", yahooOptions: "^SPX" },
   RUT: { display: "RUT", bullflow: "RUT", yahoo: "^RUT", yahooOptions: "^RUT" },
   VIX: { display: "VIX", bullflow: "VIX", yahoo: "^VIX", yahooOptions: "^VIX" },
 };
